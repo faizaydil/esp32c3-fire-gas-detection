@@ -136,7 +136,7 @@ MQ-135 AIR HAZARD!
 
 # GitHub Pages Report Link
 
-(https://github.com/faizaydil/esp32c3-fire-gas-detection/)
+https://faizaydil.github.io/esp32c3-fire-gas-detection/
 
 ---
 
