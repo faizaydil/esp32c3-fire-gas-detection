@@ -143,5 +143,4 @@ MQ-135 AIR HAZARD!
 # License
 
 This project is created for academic use.
-The firmware source code is stored in:
 
