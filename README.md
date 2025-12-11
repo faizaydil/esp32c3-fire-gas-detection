@@ -6,7 +6,7 @@ The system detects flammable gases and hazardous air quality using **MQ-2** and 
 
 ---
 
-## 🔥 System Features
+## System Features
 
 - Real-time gas (MQ-2) & air-quality (MQ-135) monitoring  
 - OLED display for live sensor readings  
@@ -20,13 +20,13 @@ The system detects flammable gases and hazardous air quality using **MQ-2** and 
 
 ---
 
-# 🧩 System Architecture
+# System Architecture
 
 ![System Architecture](images/system_architecture.png)
 
 ---
 
-# 🛠 Hardware Components
+# Hardware Components
 
 | Component | Description |
 |----------|-------------|
@@ -40,7 +40,7 @@ The system detects flammable gases and hazardous air quality using **MQ-2** and 
 
 ---
 
-# 🔌 GPIO Mapping
+# GPIO Mapping
 
 | Device | GPIO |
 |--------|------|
@@ -55,7 +55,7 @@ The system detects flammable gases and hazardous air quality using **MQ-2** and 
 
 ---
 
-# 🧵 FreeRTOS Task Overview
+# FreeRTOS Task Overview
 
 ### **Task 1 — Sensor Task**
 - Reads MQ-2 & MQ-135 digital outputs  
@@ -84,7 +84,7 @@ The system detects flammable gases and hazardous air quality using **MQ-2** and 
 
 ---
 
-# ⚡ Interrupt Handling Flow
+# Interrupt Handling Flow
 
 ![ISR Flow](images/isr_flow.png)
 
@@ -95,13 +95,13 @@ The system detects flammable gases and hazardous air quality using **MQ-2** and 
 
 ---
 
-# ⚠ Hazard Detection Logic
+# Hazard Detection Logic
 
 ![Hazard Logic](images/hazard_flowchart.png)
 
 ---
 
-# 📂 Source Code
+# Source Code
 /src
 app_main.c
 tasks_common.h
@@ -115,7 +115,7 @@ oled_driver.c
 
 ---
 
-# 🖥 Live OLED Output Examples
+# Live OLED Output Examples
 
 MQ2: OK
 MQ135: OK
@@ -126,7 +126,7 @@ MQ-135 AIR HAZARD!
 
 ---
 
-# 🔊 Buzzer Logic
+# Buzzer Logic
 
 - 3× alarm beeps on hazard  
 - Fast blink (LED red)  
@@ -134,13 +134,13 @@ MQ-135 AIR HAZARD!
 
 ---
 
-# 🌐 GitHub Pages Report Link
+# GitHub Pages Report Link
 
 (https://github.com/faizaydil/esp32c3-fire-gas-detection/)
 
 ---
 
-# 📘 License
+# License
 
 This project is created for academic use.
 The firmware source code is stored in:
