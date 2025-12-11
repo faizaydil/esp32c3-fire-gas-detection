@@ -103,14 +103,14 @@ The system detects flammable gases and hazardous air quality using **MQ-2** and 
 
 # Source Code
 /src
-app_main.c
-tasks_common.h
-sensor_task.c
-monitor_task.c
-emergency_task.c
-display_task.c
-cloud_task.c
-oled_driver.c
+├── app_main.c
+├── tasks_common.h
+├── sensor_task.c
+├── monitor_task.c
+├── emergency_task.c
+├── display_task.c
+├── cloud_task.c
+└── oled_driver.c
 
 
 ---
