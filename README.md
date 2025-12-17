@@ -1,146 +1,291 @@
-# esp32c3-fire-gas-detection
-# Smart Fire & Gas Detection System Using ESP32-C3 (FreeRTOS Project)
+# Smart Fire Risk Detection System Using ESP32-C3 and FreeRTOS (DHT11-Based)
 
-This project implements a **real-time IoT fire and gas hazard detection system** using the ESP32-C3 and FreeRTOS.  
-The system detects flammable gases and hazardous air quality using **MQ-2** and **MQ-135** sensors, displays real-time results on an **OLED**, and activates an **alarm system** when danger is detected.
+This project implements a **real-time fire risk detection system** using the **Seeed Studio XIAO ESP32-C3** and **FreeRTOS**.  
+Instead of gas sensors, the system detects **fire-prone conditions** by monitoring **temperature and humidity** using a **GRV-DHT11 sensor**.
+
+Fire risk is identified when **high temperature** and **low humidity** occur simultaneously, which is a common early indicator of fire hazards in smart home environments.
 
 ---
 
 ## System Features
 
-- Real-time gas (MQ-2) & air-quality (MQ-135) monitoring  
-- OLED display for live sensor readings  
-- Interrupt-based hazard spike detection  
-- Event Groups for multi-hazard signaling  
-- Message Buffers for task-to-task communication  
-- Mutex to protect OLED + buzzer  
-- Buzzer + LEDs as alarm indicators  
-- FreeRTOS multi-tasking architecture  
-- Cloud-ready structure for future RainMaker integration
+- Real-time **temperature and humidity monitoring**
+- Fire-risk detection based on environmental conditions
+- OLED display for live system status
+- Audible and visual alerts (buzzer and LEDs)
+- Interrupt-based hazard simulation using pushbuttons
+- FreeRTOS multi-tasking architecture
+- Event-driven emergency handling
+- Modular and scalable firmware design
 
 ---
 
-# System Architecture
+## System Architecture
 
 ![System Architecture](images/system_architecture.png)
 
 ---
 
-# Hardware Components
+## 🛠 Hardware Components
 
 | Component | Description |
 |----------|-------------|
-| ESP32-C3 | Main MCU running FreeRTOS |
-| MQ-2 Sensor | Detects LPG, methane, smoke |
-| MQ-135 Sensor | Detects CO₂, NH₃, CO, alcohol vapors |
-| OLED (SSD1306) | Displays system readings |
-| Buzzer | Audible alarm |
-| LEDs | Visual alarm indicators |
-| Pushbutton Interrupts | Simulate hazard spikes |
+| ESP32-C3 (Seeed Studio XIAO) | Main MCU running FreeRTOS |
+| GRV-DHT11 | Temperature & humidity sensor |
+| OLED (SSD1306, I²C) | Displays system readings and alerts |
+| Buzzer | Audible fire-risk alert |
+| LEDs (Red, Green, Yellow) | System status indicators |
+| Pushbuttons | ISR-based fire-risk simulation |
+| Breadboard & Jumper Wires | Prototyping |
 
 ---
 
-# GPIO Mapping
+## GPIO Mapping
 
 | Device | GPIO |
-|--------|------|
-| MQ-2 DO | GPIO 6 |
-| MQ-135 DO | GPIO 7 |
-| Buzzer | GPIO 5 |
-| LED Red | GPIO 3 |
-| LED Green | GPIO 4 |
-| LED Yellow | GPIO 2 |
+|------|------|
+| DHT11 DATA | GPIO 8 |
 | OLED SDA | GPIO 9 |
 | OLED SCL | GPIO 10 |
+| Buzzer | GPIO 5 |
+| Red LED | GPIO 3 |
+| Green LED | GPIO 4 |
+| Yellow LED | GPIO 2 |
+| Button 1 (High Temp Sim) | GPIO 0 |
+| Button 2 (Low Humidity Sim) | GPIO 1 |
 
 ---
 
-# FreeRTOS Task Overview
+## Fire Risk Detection Logic
 
-### **Task 1 — Sensor Task**
-- Reads MQ-2 & MQ-135 digital outputs  
-- Packages into `SensorMsg_t`  
-- Sends to message buffer  
+Fire risk is detected when:
+- **Temperature > 35°C**
+- **Humidity < 30% RH**
 
-### **Task 2 — Monitor Task**
-- Pulls sensor data from message buffer  
-- Interprets hazard conditions  
-- Sets event group flags  
-- Notifies Emergency Task  
+When both conditions are met:
+- Red LED turns ON
+- Buzzer is activated
+- OLED displays **“FIRE RISK DETECTED”**
 
-### **Task 3 — Emergency Task**
-- Responds to hazards  
-- Displays warnings on OLED  
-- Activates buzzer + LEDs  
-- Clears flags  
+---
+
+## FreeRTOS Task Overview
+
+### **Task 1 — DHT11 Sensor Task**
+- Reads temperature and humidity every 2 seconds
+- Sends data via a **Message Buffer**
+
+### **Task 2 — Fire Risk Monitor Task**
+- Receives sensor data
+- Evaluates fire-risk conditions
+- Sets **Event Group flags**
+- Notifies Emergency Task
+
+### **Task 3 — Emergency Alert Task**
+- Triggered using **Task Notifications**
+- Controls buzzer and LEDs
+- Displays warning messages on OLED
+- Clears event flags after handling
 
 ### **Task 4 — Display Task**
-- Shows real-time sensor status  
-- Uses mutex for OLED  
-
-### **Task 5 — Cloud Task (Optional)**
-- Placeholder for ESP RainMaker cloud sync  
-- OTA update integration point  
+- Continuously updates OLED with live readings
+- Uses a **mutex** to protect OLED access
 
 ---
 
-# Interrupt Handling Flow
+## Interrupt Handling
+
+Two pushbuttons are used to simulate abnormal conditions:
+- **Button 1:** Simulates high temperature
+- **Button 2:** Simulates low humidity
+
+Interrupt Service Routines (ISRs):
+- Set event flags
+- Notify Emergency Task
+- Exit quickly to maintain RTOS stability
 
 ![ISR Flow](images/isr_flow.png)
 
-- Button ISR creates out-of-range hazard values  
-- ISR sets event bits  
-- ISR notifies Emergency Task  
-- Emergency Task processes hazards immediately  
+---
+
+## Task Interaction
+
+![Task Interaction](images/task_interaction.png)
 
 ---
 
-# Hazard Detection Logic
+## Source Code Structure
 
-![Hazard Logic](images/hazard_flowchart.png)
+# Smart Fire Risk Detection System Using ESP32-C3 and FreeRTOS (DHT11-Based)
+
+This project implements a **real-time fire risk detection system** using the **Seeed Studio XIAO ESP32-C3** and **FreeRTOS**.  
+Instead of gas sensors, the system detects **fire-prone conditions** by monitoring **temperature and humidity** using a **GRV-DHT11 sensor**.
+
+Fire risk is identified when **high temperature** and **low humidity** occur simultaneously, which is a common early indicator of fire hazards in smart home environments.
 
 ---
 
-# Source Code
-/src
+## System Features
+
+- Real-time **temperature and humidity monitoring**
+- Fire-risk detection based on environmental conditions
+- OLED display for live system status
+- Audible and visual alerts (buzzer and LEDs)
+- Interrupt-based hazard simulation using pushbuttons
+- FreeRTOS multi-tasking architecture
+- Event-driven emergency handling
+- Modular and scalable firmware design
+
+---
+
+## System Architecture
+
+![System Architecture](images/system_architecture.png)
+
+---
+
+## Hardware Components
+
+| Component | Description |
+|----------|-------------|
+| ESP32-C3 (Seeed Studio XIAO) | Main MCU running FreeRTOS |
+| GRV-DHT11 | Temperature & humidity sensor |
+| OLED (SSD1306, I²C) | Displays system readings and alerts |
+| Buzzer | Audible fire-risk alert |
+| LEDs (Red, Green, Yellow) | System status indicators |
+| Pushbuttons | ISR-based fire-risk simulation |
+| Breadboard & Jumper Wires | Prototyping |
+
+---
+
+## GPIO Mapping
+
+| Device | GPIO |
+|------|------|
+| DHT11 DATA | GPIO 8 |
+| OLED SDA | GPIO 9 |
+| OLED SCL | GPIO 10 |
+| Buzzer | GPIO 5 |
+| Red LED | GPIO 3 |
+| Green LED | GPIO 4 |
+| Yellow LED | GPIO 2 |
+| Button 1 (High Temp Sim) | GPIO 0 |
+| Button 2 (Low Humidity Sim) | GPIO 1 |
+
+---
+
+## Fire Risk Detection Logic
+
+Fire risk is detected when:
+- **Temperature > 35°C**
+- **Humidity < 30% RH**
+
+When both conditions are met:
+- Red LED turns ON
+- Buzzer is activated
+- OLED displays **“FIRE RISK DETECTED”**
+
+---
+
+## FreeRTOS Task Overview
+
+### **Task 1 — DHT11 Sensor Task**
+- Reads temperature and humidity every 2 seconds
+- Sends data via a **Message Buffer**
+
+### **Task 2 — Fire Risk Monitor Task**
+- Receives sensor data
+- Evaluates fire-risk conditions
+- Sets **Event Group flags**
+- Notifies Emergency Task
+
+### **Task 3 — Emergency Alert Task**
+- Triggered using **Task Notifications**
+- Controls buzzer and LEDs
+- Displays warning messages on OLED
+- Clears event flags after handling
+
+### **Task 4 — Display Task**
+- Continuously updates OLED with live readings
+- Uses a **mutex** to protect OLED access
+
+---
+
+## Interrupt Handling
+
+Two pushbuttons are used to simulate abnormal conditions:
+- **Button 1:** Simulates high temperature
+- **Button 2:** Simulates low humidity
+
+Interrupt Service Routines (ISRs):
+- Set event flags
+- Notify Emergency Task
+- Exit quickly to maintain RTOS stability
+
+![ISR Flow](images/isr_flow.png)
+
+---
+
+## Task Interaction
+
+![Task Interaction](images/task_interaction.png)
+
+---
+
+## Source Code Structure
+
+src
 ├── app_main.c
 ├── tasks_common.h
-├── sensor_task.c
+├── dht11_task.c
 ├── monitor_task.c
 ├── emergency_task.c
 ├── display_task.c
-├── cloud_task.c
 └── oled_driver.c
 
 
 ---
 
-# Live OLED Output Examples
+## OLED Output Examples
 
-MQ2: OK
-MQ135: OK
+Temp: 29°C
+Humidity: 55%
+Status: NORMAL
 
-MQ-2 GAS ALERT!
-MQ-135 AIR HAZARD!
+Temp: 38°C
+Humidity: 25%
+Status: FIRE RISK
 
-
----
-
-# Buzzer Logic
-
-- 3× alarm beeps on hazard  
-- Fast blink (LED red)  
-- Event flags cleared after handling  
 
 ---
 
-# GitHub Pages Report Link
+## Video Demonstration
 
-https://faizaydil.github.io/esp32c3-fire-gas-detection/
+A video demonstration is embedded in the web-based report and shows:
+- Live temperature and humidity readings
+- Normal and fire-risk conditions
+- LED and buzzer activation
+- ISR-triggered fire-risk simulation
+- FreeRTOS task behavior
 
 ---
 
-# License
+## Web-Based Report
 
-This project is created for academic use.
+This repository is hosted using **GitHub Pages** as a web-based project report, including:
+- System architecture diagrams
+- Hardware and firmware explanation
+- RTOS concepts and synchronization mechanisms
+- Embedded video demonstration
 
+---
+
+## Academic Note
+
+The GRV-DHT11 sensor was selected for its simplicity and suitability for RTOS-based educational projects. While it offers limited accuracy compared to industrial sensors, it is sufficient for demonstrating real-time monitoring, task scheduling, and event-driven fire-risk detection.
+
+---
+
+## License
+
+This project is developed for academic and educational purposes.
