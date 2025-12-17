@@ -26,7 +26,7 @@ Fire risk is identified when **high temperature** and **low humidity** occur sim
 
 ---
 
-## 🛠 Hardware Components
+## Hardware Components
 
 | Component | Description |
 |----------|-------------|
