@@ -8,24 +8,24 @@
 
 /* GPIO Mapping */
 #define DHT11_GPIO        8
+#define LCD_SDA_GPIO      9
+#define LCD_SCL_GPIO      10
 #define BUZZER_GPIO       5
 #define LED_RED_GPIO      3
 #define LED_GREEN_GPIO    4
 #define LED_YELLOW_GPIO   2
-#define BTN_HIGH_TEMP     0
-#define BTN_LOW_HUM       1
 
-/* Fire Thresholds */
+/* Fire Risk Thresholds */
 #define TEMP_THRESHOLD    35
 #define HUM_THRESHOLD     30
 
 /* Event Group Bits */
 #define EVT_FIRE_RISK     (1 << 0)
 
-/* Shared Handles */
+/* Shared RTOS Objects */
 extern EventGroupHandle_t fire_event_group;
 extern MessageBufferHandle_t sensor_msg_buffer;
-extern SemaphoreHandle_t oled_mutex;
+extern SemaphoreHandle_t lcd_mutex;
 
 /* Sensor Data Structure */
 typedef struct {
