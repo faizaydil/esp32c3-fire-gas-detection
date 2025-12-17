@@ -234,14 +234,15 @@ Interrupt Service Routines (ISRs):
 
 ## Source Code Structure
 
-src
-├── app_main.c
-├── tasks_common.h
-├── dht11_task.c
-├── monitor_task.c
-├── emergency_task.c
-├── display_task.c
-└── oled_driver.c
+src/
+ ├── app_main.c
+ ├── tasks_common.h
+ ├── dht11_task.c
+ ├── monitor_task.c
+ ├── emergency_task.c
+ ├── display_task.c
+ ├── lcd1602_driver.h
+ └── lcd1602_driver.c
 
 
 ---
