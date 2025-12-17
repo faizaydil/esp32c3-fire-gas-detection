@@ -1,26 +1,24 @@
 #include "tasks_common.h"
-#include "oled_driver.h"
+#include "freertos/task.h"
 
-static const char *TAG = "DISPLAY_TASK";
+extern void oled_show_status(int temp, int hum, const char *status);
 
-void task_display(void *pv) {
-    SensorMsg_t rx;
-    char buf[32];
+void display_task(void *pv)
+{
+    dht_data_t data;
 
     while (1) {
-        size_t r = xMessageBufferReceive(xSensorMsgBuf, &rx, sizeof(rx), pdMS_TO_TICKS(2000));
-        if (r != sizeof(rx)) continue;
+        if (xMessageBufferReceive(sensor_msg_buffer, &data, sizeof(data), 0)) {
 
-        if (xSemaphoreTake(xResourceMutex, pdMS_TO_TICKS(1000))) {
-            oled_clear();
-            sprintf(buf, "MQ2: %s", rx.mq2_do ? "ALARM" : "OK");
-            oled_draw_text(0, 0, buf);
+            if (xSemaphoreTake(oled_mutex, portMAX_DELAY)) {
+                if (data.temperature > TEMP_THRESHOLD && data.humidity < HUM_THRESHOLD)
+                    oled_show_status(data.temperature, data.humidity, "FIRE RISK");
+                else
+                    oled_show_status(data.temperature, data.humidity, "NORMAL");
 
-            sprintf(buf, "MQ135: %s", rx.mq135_do ? "ALARM" : "OK");
-            oled_draw_text(0, 12, buf);
-
-            oled_update();
-            xSemaphoreGive(xResourceMutex);
+                xSemaphoreGive(oled_mutex);
+            }
         }
+        vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
