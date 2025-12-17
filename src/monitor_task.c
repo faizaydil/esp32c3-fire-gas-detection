@@ -1,22 +1,15 @@
 #include "tasks_common.h"
+#include "freertos/task.h"
 
-static const char *TAG = "MONITOR_TASK";
-
-void task_monitor(void *pv) {
-    SensorMsg_t rx;
+void monitor_task(void *pv)
+{
+    dht_data_t data;
 
     while (1) {
-        size_t r = xMessageBufferReceive(xSensorMsgBuf, &rx, sizeof(rx), portMAX_DELAY);
-        if (r != sizeof(rx)) continue;
-
-        EventBits_t bits = 0;
-
-        if (rx.mq2_do) bits |= BIT_MQ2_ALARM;
-        if (rx.mq135_do) bits |= BIT_MQ135_ALARM;
-
-        if (bits) {
-            xEventGroupSetBits(xEventGroup, bits);
-            xTaskNotifyGive(xEmergencyTaskHandle);
+        if (xMessageBufferReceive(sensor_msg_buffer, &data, sizeof(data), portMAX_DELAY)) {
+            if (data.temperature > TEMP_THRESHOLD && data.humidity < HUM_THRESHOLD) {
+                xEventGroupSetBits(fire_event_group, EVT_FIRE_RISK);
+            }
         }
     }
 }
