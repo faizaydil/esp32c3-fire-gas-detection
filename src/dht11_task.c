@@ -1,11 +1,12 @@
 #include "tasks_common.h"
 #include "freertos/task.h"
+#include "esp_random.h"
 
-/* Dummy DHT11 Read (Replace with real driver if needed) */
+/* Simulated DHT11 Read (acceptable for coursework) */
 static void read_dht11(dht_data_t *data)
 {
-    data->temperature = 25 + (esp_random() % 15);
-    data->humidity = 40 + (esp_random() % 30);
+    data->temperature = 25 + (esp_random() % 20);
+    data->humidity = 30 + (esp_random() % 40);
 }
 
 void dht11_task(void *pv)
