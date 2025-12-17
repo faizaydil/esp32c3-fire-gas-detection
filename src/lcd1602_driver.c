@@ -1,7 +1,9 @@
 #include "lcd1602_driver.h"
-#include "driver/i2c.h"
 #include "freertos/task.h"
 #include <stdio.h>
+#include "driver/gpio.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 #define I2C_NUM I2C_NUM_0
 #define SDA_PIN 9
