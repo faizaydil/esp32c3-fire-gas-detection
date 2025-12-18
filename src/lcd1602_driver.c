@@ -1,86 +1,64 @@
 #include "lcd1602_driver.h"
-#include "freertos/task.h"
-#include <stdio.h>
 #include "driver/gpio.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#include "esp_rom_sys.h"
 
-#define I2C_NUM I2C_NUM_0
-#define SDA_PIN 9
-#define SCL_PIN 10
-#define LCD_ADDR 0x27
+#define LCD_RS GPIO_NUM_10
+#define LCD_E  GPIO_NUM_11
+#define LCD_D4 GPIO_NUM_12
+#define LCD_D5 GPIO_NUM_13
+#define LCD_D6 GPIO_NUM_14
+#define LCD_D7 GPIO_NUM_15
 
-#define LCD_BACKLIGHT 0x08
-#define ENABLE 0x04
-#define RS 0x01
-
-static void i2c_write(uint8_t data)
+static void lcd_pulse_enable(void)
 {
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (LCD_ADDR << 1), true);
-    i2c_master_write_byte(cmd, data | LCD_BACKLIGHT, true);
-    i2c_master_stop(cmd);
-    i2c_master_cmd_begin(I2C_NUM, cmd, pdMS_TO_TICKS(50));
-    i2c_cmd_link_delete(cmd);
+    gpio_set_level(LCD_E, 1);
+    esp_rom_delay_us(1);
+    gpio_set_level(LCD_E, 0);
+    esp_rom_delay_us(100);
 }
 
-static void pulse(uint8_t data)
+static void lcd_send_nibble(uint8_t data)
 {
-    i2c_write(data | ENABLE);
-    vTaskDelay(pdMS_TO_TICKS(1));
-    i2c_write(data & ~ENABLE);
+    gpio_set_level(LCD_D4, (data >> 0) & 1);
+    gpio_set_level(LCD_D5, (data >> 1) & 1);
+    gpio_set_level(LCD_D6, (data >> 2) & 1);
+    gpio_set_level(LCD_D7, (data >> 3) & 1);
+    lcd_pulse_enable();
 }
 
-static void send(uint8_t val, uint8_t mode)
+static void lcd_send_byte(uint8_t data, int rs)
 {
-    uint8_t high = (val & 0xF0) | mode;
-    uint8_t low = ((val << 4) & 0xF0) | mode;
-    pulse(high);
-    pulse(low);
-}
-
-static void cmd(uint8_t val)
-{
-    send(val, 0);
-    vTaskDelay(pdMS_TO_TICKS(2));
-}
-
-static void data(uint8_t val)
-{
-    send(val, RS);
+    gpio_set_level(LCD_RS, rs);
+    lcd_send_nibble(data >> 4);
+    lcd_send_nibble(data & 0x0F);
 }
 
 void lcd_init(void)
 {
-    i2c_config_t cfg = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = SDA_PIN,
-        .scl_io_num = SCL_PIN,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = 100000
-    };
+    gpio_set_direction(LCD_RS, GPIO_MODE_OUTPUT);
+    gpio_set_direction(LCD_E, GPIO_MODE_OUTPUT);
+    gpio_set_direction(LCD_D4, GPIO_MODE_OUTPUT);
+    gpio_set_direction(LCD_D5, GPIO_MODE_OUTPUT);
+    gpio_set_direction(LCD_D6, GPIO_MODE_OUTPUT);
+    gpio_set_direction(LCD_D7, GPIO_MODE_OUTPUT);
 
-    i2c_param_config(I2C_NUM, &cfg);
-    i2c_driver_install(I2C_NUM, cfg.mode, 0, 0, 0);
-
-    vTaskDelay(pdMS_TO_TICKS(50));
-
-    cmd(0x28);
-    cmd(0x0C);
-    cmd(0x06);
-    cmd(0x01);
+    esp_rom_delay_us(50000);
+    lcd_send_nibble(0x03);
+    lcd_send_nibble(0x02);
+    lcd_send_byte(0x28, 0);
+    lcd_send_byte(0x0C, 0);
+    lcd_send_byte(0x01, 0);
 }
 
-void lcd_show_status(int temp, int hum, const char *status)
+void lcd_clear(void)
 {
-    char buf[17];
-    cmd(0x01);
+    lcd_send_byte(0x01, 0);
+    esp_rom_delay_us(2000);
+}
 
-    snprintf(buf, 16, "T:%dC H:%d%%", temp, hum);
-    for (int i = 0; buf[i]; i++) data(buf[i]);
-
-    cmd(0xC0);
-    for (int i = 0; status[i]; i++) data(status[i]);
+void lcd_print(int row, int col, const char *text)
+{
+    uint8_t addr = (row == 0) ? 0x80 : 0xC0;
+    lcd_send_byte(addr + col, 0);
+    while (*text) lcd_send_byte(*text++, 1);
 }
