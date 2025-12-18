@@ -1,36 +1,18 @@
-#ifndef TASKS_COMMON_H
-#define TASKS_COMMON_H
+#pragma once
+#include "driver/gpio.h"
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/event_groups.h"
-#include "freertos/message_buffer.h"
-#include "freertos/semphr.h"
+/* GPIO pins */
+#define DHT11_GPIO        GPIO_NUM_4
+#define LED_RED_GPIO      GPIO_NUM_5
+#define LED_GREEN_GPIO    GPIO_NUM_6
+#define LED_YELLOW_GPIO   GPIO_NUM_7
+#define BUZZER_GPIO       GPIO_NUM_8
 
-/* GPIO Mapping */
-#define DHT11_GPIO        8
-#define LCD_SDA_GPIO      9
-#define LCD_SCL_GPIO      10
-#define BUZZER_GPIO       5
-#define LED_RED_GPIO      3
-#define LED_GREEN_GPIO    4
-#define LED_YELLOW_GPIO   2
+/* Event bits */
+#define TEMP_EVENT_BIT    (1 << 0)
 
-/* Fire Risk Thresholds */
-#define TEMP_THRESHOLD    35
-#define HUM_THRESHOLD     30
-
-/* Event Group Bits */
-#define EVT_FIRE_RISK     (1 << 0)
-
-/* Shared RTOS Objects */
-extern EventGroupHandle_t fire_event_group;
-extern MessageBufferHandle_t sensor_msg_buffer;
-extern SemaphoreHandle_t lcd_mutex;
-
-/* Sensor Data Structure */
+/* Sensor data */
 typedef struct {
-    int temperature;
-    int humidity;
+    float temperature;
+    float humidity;
 } dht_data_t;
-
-#endif
