@@ -8,18 +8,19 @@ extern EventGroupHandle_t fire_event_group;
 
 void emergency_task(void *pv)
 {
+    gpio_set_direction(BUZZER_GPIO, GPIO_MODE_OUTPUT);
+
     while (1) {
-        EventBits_t bits = xEventGroupWaitBits(
+        xEventGroupWaitBits(
             fire_event_group,
-            TEMP_EVENT_BIT,
-            pdTRUE,
+            EVT_FIRE_RISK,
+            pdFALSE,
             pdFALSE,
             portMAX_DELAY
         );
 
-        if (bits & TEMP_EVENT_BIT) {
-            gpio_set_level(LED_RED_GPIO, 1);
-            gpio_set_level(BUZZER_GPIO, 1);
-        }
+        gpio_set_level(BUZZER_GPIO, 1);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        gpio_set_level(BUZZER_GPIO, 0);
     }
 }
