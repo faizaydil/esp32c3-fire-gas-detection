@@ -1,64 +1,56 @@
 #include "lcd1602_driver.h"
-#include "driver/gpio.h"
-#include "esp_rom_sys.h"
+#include "driver/i2c_master.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
-#define LCD_RS GPIO_NUM_10
-#define LCD_E  GPIO_NUM_11
-#define LCD_D4 GPIO_NUM_12
-#define LCD_D5 GPIO_NUM_13
-#define LCD_D6 GPIO_NUM_14
-#define LCD_D7 GPIO_NUM_15
+#define I2C_SDA GPIO_NUM_9
+#define I2C_SCL GPIO_NUM_10
+#define LCD_ADDR 0x27
 
-static void lcd_pulse_enable(void)
+static i2c_master_bus_handle_t bus;
+static i2c_master_dev_handle_t dev;
+
+static void lcd_write(uint8_t data)
 {
-    gpio_set_level(LCD_E, 1);
-    esp_rom_delay_us(1);
-    gpio_set_level(LCD_E, 0);
-    esp_rom_delay_us(100);
-}
-
-static void lcd_send_nibble(uint8_t data)
-{
-    gpio_set_level(LCD_D4, (data >> 0) & 1);
-    gpio_set_level(LCD_D5, (data >> 1) & 1);
-    gpio_set_level(LCD_D6, (data >> 2) & 1);
-    gpio_set_level(LCD_D7, (data >> 3) & 1);
-    lcd_pulse_enable();
-}
-
-static void lcd_send_byte(uint8_t data, int rs)
-{
-    gpio_set_level(LCD_RS, rs);
-    lcd_send_nibble(data >> 4);
-    lcd_send_nibble(data & 0x0F);
+    i2c_master_transmit(dev, &data, 1, -1);
 }
 
 void lcd_init(void)
 {
-    gpio_set_direction(LCD_RS, GPIO_MODE_OUTPUT);
-    gpio_set_direction(LCD_E, GPIO_MODE_OUTPUT);
-    gpio_set_direction(LCD_D4, GPIO_MODE_OUTPUT);
-    gpio_set_direction(LCD_D5, GPIO_MODE_OUTPUT);
-    gpio_set_direction(LCD_D6, GPIO_MODE_OUTPUT);
-    gpio_set_direction(LCD_D7, GPIO_MODE_OUTPUT);
+    i2c_master_bus_config_t bus_cfg = {
+        .clk_source = I2C_CLK_SRC_DEFAULT,
+        .i2c_port = 0,
+        .sda_io_num = I2C_SDA,
+        .scl_io_num = I2C_SCL,
+        .flags.enable_internal_pullup = true,
+    };
 
-    esp_rom_delay_us(50000);
-    lcd_send_nibble(0x03);
-    lcd_send_nibble(0x02);
-    lcd_send_byte(0x28, 0);
-    lcd_send_byte(0x0C, 0);
-    lcd_send_byte(0x01, 0);
+    i2c_new_master_bus(&bus_cfg, &bus);
+
+    i2c_device_config_t dev_cfg = {
+        .device_address = LCD_ADDR,
+        .dev_addr_length = I2C_ADDR_BIT_LEN_7,
+        .scl_speed_hz = 100000,
+    };
+
+    i2c_master_bus_add_device(bus, &dev_cfg, &dev);
+    vTaskDelay(pdMS_TO_TICKS(50));
+    lcd_clear();
 }
 
 void lcd_clear(void)
 {
-    lcd_send_byte(0x01, 0);
-    esp_rom_delay_us(2000);
+    lcd_write(0x01);
+    vTaskDelay(pdMS_TO_TICKS(5));
 }
 
-void lcd_print(int row, int col, const char *text)
+void lcd_set_cursor(int col, int row)
 {
-    uint8_t addr = (row == 0) ? 0x80 : 0xC0;
-    lcd_send_byte(addr + col, 0);
-    while (*text) lcd_send_byte(*text++, 1);
+    lcd_write((row == 0 ? 0x80 : 0xC0) + col);
+}
+
+void lcd_print(const char *str)
+{
+    while (*str)
+        lcd_write(*str++);
 }
