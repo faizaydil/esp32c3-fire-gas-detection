@@ -1,24 +1,25 @@
-#include "tasks_common.h"
+#include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/event_groups.h"
 #include "driver/gpio.h"
+#include "tasks_common.h"
+
+extern EventGroupHandle_t fire_event_group;
 
 void emergency_task(void *pv)
 {
     while (1) {
-        xEventGroupWaitBits(
+        EventBits_t bits = xEventGroupWaitBits(
             fire_event_group,
-            EVT_FIRE_RISK,
+            TEMP_EVENT_BIT,
             pdTRUE,
             pdFALSE,
             portMAX_DELAY
         );
 
-        gpio_set_level(LED_RED_GPIO, 1);
-        gpio_set_level(BUZZER_GPIO, 1);
-
-        vTaskDelay(pdMS_TO_TICKS(2000));
-
-        gpio_set_level(LED_RED_GPIO, 0);
-        gpio_set_level(BUZZER_GPIO, 0);
+        if (bits & TEMP_EVENT_BIT) {
+            gpio_set_level(LED_RED_GPIO, 1);
+            gpio_set_level(BUZZER_GPIO, 1);
+        }
     }
 }
